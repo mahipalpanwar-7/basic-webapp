@@ -1,15 +1,24 @@
 package main
 
 import (
+	"fmt"
 	"html/template"
 	"net/http"
 
-	"github.com/gorilla/mux" // used for URI parameters insted of query parameters
+	"github.com/go-redis/redis" // Redis for fast data storage
+	"github.com/gorilla/mux"    // used for URI parameters insted of query parameters
 )
 
-var templates *template.Template // need templates to be accessible from routes  for simplicity global object is created
+var client *redis.Client
+
+var templates *template.Template // need templates to be accessible from different routes  for simplicity global object is created
 
 func main() {
+
+	// instantiating client object
+	client = redis.NewClient(&redis.Options{
+		Addr: "localhost:6379",
+	})
 	templates = template.Must(template.ParseGlob("templates/*.html")) // instantiate the template object (for parse the code from the folder)
 	r := mux.NewRouter()
 	r.HandleFunc("/", indexHandler).Methods("GET")
@@ -18,5 +27,10 @@ func main() {
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
-	templates.ExecuteTemplate(w, "index.html", nil)
+	comments, err := client.LRange("comments", 0, 10).Result()
+	if err != nil {
+		return
+	}
+	fmt.Println(comments)
+	templates.ExecuteTemplate(w, "index.html", comments)
 }

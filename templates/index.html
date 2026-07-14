@@ -4,6 +4,9 @@
         <title>Basic golang web app using gorillamux and Redis</title>
     </head>
     <body>
-        <h1>Basic Web App</h1>
+        <h1>comments</h1>
+        {{ range . }}
+        <div>{{ . }}</div>
+        {{ end }}
     </body>
 </html>
